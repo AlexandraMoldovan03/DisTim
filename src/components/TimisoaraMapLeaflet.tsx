@@ -17,7 +17,6 @@ interface TotemLocation {
   description: string;
   position: LatLngExpression;
 }
-
 // coordonate aproximative pentru puncte din Timișoara
 const TOTEM_LOCATIONS: TotemLocation[] = [
   {
