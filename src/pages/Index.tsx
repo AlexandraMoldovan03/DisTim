@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CategoryCard from "@/components/CategoryCard";
 import HowItWorksModal from "@/components/HowItWorksModal";
-import TimisoaraMap from "@/components/TimisoaraMap";
+import TimisoaraMapLeaflet from "@/components/TimisoaraMapLeaflet";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -43,7 +43,7 @@ const Index = () => {
 
         {/* Interactive Map Section */}
         <section className="mb-12">
-          <TimisoaraMap />
+          <TimisoaraMapLeaflet />
         </section>
 
         {/* Categories Grid */}
