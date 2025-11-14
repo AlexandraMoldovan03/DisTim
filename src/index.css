@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Core Brand Colors - New Timișoara Palette */
+    --background: 47 47% 96%; /* #FAF8F1 - Warm cream */
+    --foreground: 176 14% 23%; /* #334443 - Deep teal */
+
+    --card: 47 47% 96%;
+    --card-foreground: 176 14% 23%;
+
+    --popover: 47 47% 96%;
+    --popover-foreground: 176 14% 23%;
+
+    /* Primary: Deep Teal */
+    --primary: 188 35% 32%; /* #34656D */
+    --primary-foreground: 47 47% 96%;
+
+    /* Secondary: Warm Golden */
+    --secondary: 47 88% 84%; /* #FAEAB1 */
+    --secondary-foreground: 176 14% 23%;
+
+    /* Muted: Lighter Teal */
+    --muted: 188 20% 85%;
+    --muted-foreground: 188 20% 40%;
+
+    /* Accent: Golden Highlight */
+    --accent: 47 88% 84%;
+    --accent-foreground: 176 14% 23%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 188 15% 75%;
+    --input: 188 15% 85%;
+    --ring: 188 35% 32%;
+
+    --radius: 0.75rem;
+    
+    /* Category Colors - Updated for new palette */
+    --literatura: 188 35% 32%; /* Deep teal */
+    --poezie: 176 30% 45%; /* Medium teal */
+    --muzica: 47 88% 70%; /* Warm gold */
+    --arte: 47 88% 84%; /* Light gold */
+    
+    /* Map colors */
+    --map-land: 47 60% 90%;
+    --map-water: 188 40% 75%;
+    --map-marker: 0 75% 60%;
+    
+    /* Gradients */
+    --hero-gradient: linear-gradient(135deg, hsl(205 70% 98%), hsl(140 30% 95%));
+    --card-hover: 0 0% 98%;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.06);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.08);
+    --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.12);
+    
+    /* Transitions */
+    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 176 14% 15%;
+    --foreground: 47 47% 96%;
+
+    --card: 176 14% 18%;
+    --card-foreground: 47 47% 96%;
+
+    --popover: 176 14% 18%;
+    --popover-foreground: 47 47% 96%;
+
+    --primary: 188 35% 45%;
+    --primary-foreground: 47 47% 96%;
+
+    --secondary: 176 14% 23%;
+    --secondary-foreground: 47 47% 96%;
+
+    --muted: 176 14% 25%;
+    --muted-foreground: 188 15% 70%;
+
+    --accent: 176 14% 25%;
+    --accent-foreground: 47 47% 96%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 176 14% 30%;
+    --input: 176 14% 30%;
+    --ring: 188 35% 45%;
+    
+    --map-land: 176 20% 25%;
+    --map-water: 188 40% 20%;
+    --map-marker: 0 75% 60%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  /* Reading typography */
+  .reading-content {
+    @apply text-[#2C2C2C] dark:text-[#E0E0E0] leading-[1.8] font-serif;
+  }
+  
+  /* Category colors - Updated */
+  .categoria-literatura {
+    @apply text-[hsl(188,35%,32%)] bg-[hsl(188,35%,32%)];
+  }
+  
+  .categoria-poezie {
+    @apply text-[hsl(176,30%,45%)] bg-[hsl(176,30%,45%)];
+  }
+  
+  .categoria-muzica {
+    @apply text-[hsl(47,88%,70%)] bg-[hsl(47,88%,70%)];
+  }
+  
+  .categoria-arte {
+    @apply text-[hsl(47,88%,84%)] bg-[hsl(47,88%,84%)];
+  }
+}
+
+/* Custom utility classes */
+@layer components {
+  .card-interactive {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98];
+  }
+  
+  .content-card {
+    @apply bg-card rounded-xl shadow-[var(--shadow-sm)] border border-border/50;
+  }
+}
