@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
+
+
 const CATEGORIES = [
   { id: "literatura", name: "Literatură", icon: "📖", count: 12, colorClass: "border-literatura" },
   { id: "poezie", name: "Poezie", icon: "✍️", count: 18, colorClass: "border-poezie" },

@@ -10,6 +10,7 @@ import SubmitArt from "./pages/SubmitArt";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (
