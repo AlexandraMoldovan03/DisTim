@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-
-
 const CATEGORIES = [
   { id: "literatura", name: "Literatură", icon: "📖", count: 12, colorClass: "border-literatura" },
   { id: "poezie", name: "Poezie", icon: "✍️", count: 18, colorClass: "border-poezie" },
@@ -32,9 +30,9 @@ const Index = () => {
     <div className="min-h-screen">
       <Header onHelpClick={() => setShowHowItWorks(true)} />
       
-      <main className="container max-w-2xl mx-auto px-4 py-12"> 
+      <main className="container max-w-2xl mx-auto px-4 py-12">
         {/* Hero Section */}
-         <section className="text-center mb-12 py-12 px-8 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/50 shadow-xl">
+        <section className="text-center mb-12 py-12 px-8 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/50 shadow-xl">
           <div className="flex justify-center mb-6">
             <img 
               src="/assets/logo-full.png" 
@@ -53,6 +51,23 @@ const Index = () => {
         {/* Interactive Map Section */}
         <section className="mb-16">
           <TimisoaraMapLeaflet />
+        </section>
+
+        {/* ✨ AI Storyline CTA – Google Gemini */}
+        <section className="mb-16 bg-card/90 backdrop-blur-sm border border-border/50 rounded-2xl p-8 text-center shadow-lg">
+          <h2 className="text-2xl font-bold mb-3 text-foreground">
+            Lasă-l pe AI să-ți spună povestea
+          </h2>
+          <p className="text-base mb-6 text-foreground/70">
+            Folosim Google Gemini ca să generăm, pe loc, o poveste personalizată
+            despre traseul tău prin Timișoara – inspirată de locurile pe care le-ai descoperit.
+          </p>
+          <NavLink to="/story">
+            <Button className="gap-2 h-12 px-8 text-base" size="lg">
+              Vezi povestea generată de AI
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </NavLink>
         </section>
 
         {/* Categories Grid */}
@@ -82,7 +97,7 @@ const Index = () => {
         </section>
 
         {/* Footer */}
-         <footer className="mt-16 pt-8 border-t border-border/50 text-center">
+        <footer className="mt-16 pt-8 border-t border-border/50 text-center">
           <div className="flex justify-center gap-8 mb-4">
             <NavLink to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Despre proiect
