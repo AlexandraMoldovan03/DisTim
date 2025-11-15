@@ -13,18 +13,20 @@ const CategoryCard = ({ id, name, icon, count, colorClass }: CategoryCardProps) 
     <NavLink
       to={`/category/${id}`}
       className={`
-        relative content-card card-interactive p-6 aspect-square
-        flex flex-col items-center justify-center gap-3
-        border-2 hover:border-current transition-colors
-        ${colorClass}
+        relative content-card p-8 aspect-square
+        flex flex-col items-center justify-center gap-4
+        border border-border/50 hover:border-primary/50
+        transition-all duration-300 hover:shadow-xl hover:-translate-y-1
+        bg-card/80 backdrop-blur-sm
+        group
       `}
     >
-      <span className="text-5xl" role="img" aria-label={name}>
+      <span className="text-6xl transition-transform duration-300 group-hover:scale-110" role="img" aria-label={name}>
         {icon}
       </span>
       <h3 className="text-lg font-bold text-center text-foreground">{name}</h3>
-      <span className="absolute top-3 right-3 text-xs bg-secondary px-2 py-1 rounded-full text-muted-foreground">
-        {count} opere
+      <span className="absolute top-4 right-4 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium">
+        {count}
       </span>
     </NavLink>
   );
