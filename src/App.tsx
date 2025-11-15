@@ -9,6 +9,7 @@ import ContentDetail from "./pages/ContentDetail";
 import SubmitArt from "./pages/SubmitArt";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import TotemPage from "./pages/TotemPage";
 
 
 const queryClient = new QueryClient();
@@ -28,6 +29,8 @@ const App = () => (
           <Route path="/contact" element={<About />} />
           <Route path="/artists" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/totem/:totemId" element={<TotemPage />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

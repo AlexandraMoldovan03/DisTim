@@ -1,240 +1,231 @@
-import { useParams } from "react-router-dom";
-import Header from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { Heart, Share2, Clock } from "lucide-react";
-import { useState } from "react";
+// src/pages/ContentDetail.tsx
+import { useEffect, useState } from "react";
+import { useParams, NavLink } from "react-router-dom";
+import {
+  ArrowLeft,
+  MapPin,
+  Music2,
+  BookOpenText,
+  PenLine,
+  Palette,
+  Eye,
+} from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
-// Mock data - will be replaced with actual data
-const MOCK_CONTENT_DETAIL = {
-  "lit-001": {
-    id: "lit-001",
-    title: "Amintiri din Timișoara Veche",
-    category: "Literatură",
-    categoryIcon: "📖",
-    artist: {
-      name: "Ion Popescu",
-      bio: "Scriitor timișorean pasionat de istoria urbană. A publicat trei romane și numeroase povestiri scurte.",
-    },
-    readingTime: 3,
-    favorites: 24,
-    content: `Străzile Timișoarei vechi miros a poveste. Fiecare pavaj poartă amprenta sutelor de ani de istorie, iar fiecare colț al orașului ascunde amintiri ce așteaptă să fie descoperite.
+type ContentCategory = "literatura" | "poezie" | "muzica" | "arte";
 
-În copilărie, obișnuiam să mă plimb pe Corso, privind în sus la ferestrele clădirilor vechi, imaginându-mi viețile celor care locuiseră acolo. Piața Unirii era inima orașului, locul unde se întâlneau destinele oamenilor, unde se născeau povești de dragoste și se spuneau ultimele rămasuri bune.
+interface ContentDetailData {
+  id: string;
+  title: string;
+  category: ContentCategory;
+  artist: string | null;
+  snippet: string | null;
+  full_text: string | null;
+  media_url: string | null;
+  views: number;
+  totem_id: string | null;
+  totem_name?: string | null;
+}
 
-Timișoara nu este doar un oraș - este o colecție de momente înghețate în timp, o carte deschisă pentru cei care știu să citească între rânduri. Fiecare stradă are povestea ei, fiecare clădire păstrează secrete vechi de secole.
+const CATEGORY_ICONS: Record<ContentCategory, JSX.Element> = {
+  literatura: <BookOpenText className="w-4 h-4" />,
+  poezie: <PenLine className="w-4 h-4" />,
+  muzica: <Music2 className="w-4 h-4" />,
+  arte: <Palette className="w-4 h-4" />,
+};
 
-Azi, când traversez aceleași străzi, simt cum istoria pulsează sub pașii mei. Orașul s-a schimbat, dar esența lui rămâne aceeași - un loc unde trecutul și prezentul dansează împreună într-un vals nesfârșit.`,
-    isFavorited: false,
-  },
-  "lit-002": {
-    id: "lit-002",
-    title: "Scrisoare către orașul meu",
-    category: "Literatură",
-    categoryIcon: "📖",
-    artist: {
-      name: "Maria Ionescu",
-      bio: "Poetă și prozatoare timișoreancă. Câștigătoare a mai multor premii literare naționale.",
-    },
-    readingTime: 5,
-    favorites: 12,
-    content: `Dragă Timișoara,
-
-Te scriu aceste rânduri din trenul care mă duce departe de tine, dar inima mea rămâne ancorat în Piața Victoriei, acolo unde ne-am cunoscut mai întâi.
-
-Îmi amintesc parfumul toamnei tale, cum frunzele galbene cădeau pe Bega, transformând malurile într-o fâșie de aur. Îmi amintesc serile petrecute în cafenelele tale vechi, unde timpul parca se mișca mai încet.
-
-Tu m-ai învățat că un oraș nu este doar clădiri și străzi. Este o entitate vie, care respiră prin oamenii săi, care crește și se transformă păstrându-și totodată sufletul.
-
-O să mă întorc, știi tu bine. Pentru că parte din mine va rămâne mereu pe străzile tale pavate, în umbrele catedralelor tale, în ecoul pașilor mei pe Corso.
-
-Cu drag veșnic,
-Maria`,
-    isFavorited: false,
-  },
-  "poe-001": {
-    id: "poe-001",
-    title: "Bega în Amurg",
-    category: "Poezie",
-    categoryIcon: "✍️",
-    artist: {
-      name: "Ana Moldovan",
-      bio: "Poetă contemporană, colaboratoare la mai multe reviste literare. Pasionată de versul liber și imagini urbane.",
-    },
-    readingTime: 2,
-    favorites: 18,
-    content: `Bega în amurg -
-un șuvoi de lumină lichidă
-se scurge printre ziduri vechi.
-
-Pe maluri, oamenii trec grăbiți,
-fiecare purtându-și propria poveste
-în buzunare.
-
-Lebedele albe plutesc liniștite,
-indiferente la agitația umană,
-stăpâne ale propriului timp.
-
-Și eu stau pe bancă,
-privind cum soarele își varsă
-ultimele raze aurii
-peste orașul meu.
-
-În clipa asta,
-Timișoara este perfectă -
-un tablou neterminat
-care nu va fi niciodată gata.`,
-    isFavorited: false,
-  },
-  "art-001": {
-    id: "art-001",
-    title: "Timișoara în Culori",
-    category: "Arte Vizuale",
-    categoryIcon: "🎨",
-    artist: {
-      name: "Andra Mureșan",
-      bio: "Ilustrator și graphic designer. Pasionată de urban sketching și aquarelle.",
-    },
-    favorites: 31,
-    description: "Serie de ilustrații digitale inspirate din arhitectura și energia Timișoarei. Fiecare imagine captează un landmark iconic prin prisma culorilor și emoțiilor mele.",
-    images: [
-      { id: 1, alt: "Piața Unirii cu Catedrala în culori vibrante" },
-      { id: 2, alt: "Strada pietonală Corso la apus" },
-    ],
-    isFavorited: false,
-  },
+const CATEGORY_LABELS: Record<ContentCategory, string> = {
+  literatura: "Literatură",
+  poezie: "Poezie",
+  muzica: "Muzică",
+  arte: "Arte vizuale",
 };
 
 const ContentDetail = () => {
   const { contentId } = useParams<{ contentId: string }>();
-  const [isFavorited, setIsFavorited] = useState(false);
-  
-  const content = contentId && MOCK_CONTENT_DETAIL[contentId as keyof typeof MOCK_CONTENT_DETAIL];
+  const [content, setContent] = useState<ContentDetailData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!content) {
+  useEffect(() => {
+    if (!contentId) return;
+
+    const loadAndIncrement = async () => {
+      console.log("🔎 ContentDetail – contentId din URL:", contentId);
+
+      // 1. luăm conținutul + numele totemului asociat
+      const { data, error } = await supabase
+        .from("contents")
+        .select(
+          "id, title, category, artist, snippet, full_text, media_url, views, totem_id, totems ( name )"
+        )
+        .eq("id", contentId)
+        .single(); // vrem fix un rând
+
+      console.log("📦 Supabase data:", data);
+      console.log("⚠️ Supabase error:", error);
+
+      if (error || !data) {
+        console.error("Eroare la încărcarea conținutului:", error);
+        setLoading(false);
+        return;
+      }
+
+      const row: any = data;
+
+      const mapped: ContentDetailData = {
+        id: row.id,
+        title: row.title,
+        category: row.category as ContentCategory,
+        artist: row.artist,
+        snippet: row.snippet,
+        full_text: row.full_text,
+        media_url: row.media_url,
+        views: row.views ?? 0,
+        totem_id: row.totem_id,
+        totem_name: row.totems?.name ?? null,
+      };
+
+      setContent(mapped);
+      setLoading(false);
+
+      // 2. incrementăm views (fire & forget)
+      const newViews = (mapped.views ?? 0) + 1;
+      void supabase
+        .from("contents")
+        .update({ views: newViews })
+        .eq("id", contentId);
+    };
+
+    loadAndIncrement();
+  }, [contentId]);
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header showBack />
-        <div className="container max-w-2xl mx-auto px-4 py-16 text-center">
-          <h2 className="text-2xl font-bold mb-4">Conținut negăsit</h2>
-          <p className="text-muted-foreground">Opera pe care o cauți nu există sau a fost ștearsă.</p>
-        </div>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">
+          Se încarcă materialul...
+        </p>
       </div>
     );
   }
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: content.title,
-          text: `${content.title} de ${content.artist.name} - Descoperit în transportul public din Timișoara`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log("Share canceled");
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copiat!");
-    }
-  };
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">
+          Materialul nu a fost găsit.
+        </p>
+      </div>
+    );
+  }
 
-  const handleFavorite = () => {
-    setIsFavorited(!isFavorited);
-  };
+  const icon = CATEGORY_ICONS[content.category];
+  const categoryLabel = CATEGORY_LABELS[content.category];
 
-  const isGallery = "images" in content;
+  const isImage =
+    content.media_url && /\.(png|jpe?g|webp|gif)$/i.test(content.media_url);
+
+  const isAudio =
+    content.media_url && /\.(mp3|wav|ogg)$/i.test(content.media_url);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Floating action buttons */}
-      <div className="fixed top-20 right-4 z-40 flex flex-col gap-2">
-        <Button
-          size="icon"
-          variant="secondary"
-          className="rounded-full shadow-lg"
-          onClick={handleFavorite}
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="container max-w-3xl mx-auto px-4 py-8 space-y-8">
+        {/* back link */}
+        <NavLink
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <Heart className={`w-5 h-5 ${isFavorited ? "fill-current text-primary" : ""}`} />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          className="rounded-full shadow-lg"
-          onClick={handleShare}
-        >
-          <Share2 className="w-5 h-5" />
-        </Button>
-      </div>
+          <ArrowLeft className="w-4 h-4" />
+          Înapoi la pagina principală
+        </NavLink>
 
-      <Header showBack />
-      
-      <main className="container max-w-2xl mx-auto pb-12">
-        {/* Hero/Cover Section */}
-        <div className="bg-gradient-to-br from-accent/30 to-secondary h-64 flex items-center justify-center text-6xl">
-          {content.categoryIcon}
-        </div>
+        {/* header card */}
+        <section className="rounded-2xl bg-gradient-to-br from-accent/40 to-secondary/60 p-6 space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-background/80 p-2 flex items-center justify-center">
+                {icon}
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+                  {content.title}
+                </h1>
+                <p className="text-sm text-foreground/80">
+                  {categoryLabel}
+                  {content.artist ? ` · ${content.artist}` : ""}
+                </p>
+              </div>
+            </div>
 
-        {/* Content Body */}
-        <article className="px-4">
-          {/* Metadata */}
-          <div className="py-6 border-b border-border">
-            <h1 className="text-3xl font-bold mb-3 leading-tight">
-              {content.title}
-            </h1>
-            <p className="text-lg text-muted-foreground mb-2">
-              de {content.artist.name}
-            </p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>{content.category}</span>
-              {"readingTime" in content && (
-                <>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {content.readingTime} min
-                  </span>
-                </>
+            <div className="flex flex-col items-end gap-1">
+              <div className="inline-flex items-center gap-1 text-xs text-foreground/80">
+                <Eye className="w-3 h-3" />
+                <span>{content.views + 1} vizualizări</span>
+              </div>
+
+              {content.totem_name && content.totem_id && (
+                <NavLink
+                  to={`/totem/${content.totem_id}`}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <MapPin className="w-3 h-3" />
+                  {content.totem_name}
+                </NavLink>
               )}
             </div>
           </div>
 
-          {/* Main Content */}
-          {isGallery ? (
-            <div className="py-8">
-              <p className="text-base leading-relaxed mb-6">
-                {content.description}
-              </p>
-              <div className="space-y-4">
-                {content.images.map((img) => (
-                  <div key={img.id} className="bg-secondary rounded-xl h-64 flex items-center justify-center text-4xl">
-                    🎨
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="py-8 reading-content text-base md:text-lg whitespace-pre-line">
-              {content.content}
+          {content.snippet && (
+            <p className="text-sm md:text-base text-foreground/90 mt-2">
+              {content.snippet}
+            </p>
+          )}
+        </section>
+
+        {/* content body */}
+        <section className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
+          {content.full_text && (
+            <div className="prose prose-sm md:prose-base max-w-none text-foreground">
+              {content.full_text.split("\n").map((para, idx) => (
+                <p key={idx} className="mb-2">
+                  {para}
+                </p>
+              ))}
             </div>
           )}
 
-          {/* Artist Card */}
-          <div className="mt-8 bg-secondary rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-3">Despre artist</h2>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-xl flex-shrink-0">
-                {content.artist.name.charAt(0)}
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1">{content.artist.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {content.artist.bio}
-                </p>
-              </div>
+          {content.media_url && (
+            <div className="mt-4 space-y-2">
+              {isImage && (
+                <img
+                  src={content.media_url}
+                  alt={content.title}
+                  className="w-full rounded-xl border border-border/60"
+                />
+              )}
+
+              {isAudio && (
+                <audio
+                  controls
+                  src={content.media_url}
+                  className="w-full mt-2"
+                />
+              )}
+
+              {!isImage && !isAudio && (
+                <a
+                  href={content.media_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Deschide media externă
+                </a>
+              )}
             </div>
-          </div>
-        </article>
+          )}
+        </section>
       </main>
     </div>
   );

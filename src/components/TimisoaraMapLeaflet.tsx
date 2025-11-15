@@ -1,3 +1,4 @@
+// src/components/TimisoaraMapLeaflet.tsx
 import { useEffect, useState } from "react";
 import {
   MapContainer,
@@ -10,53 +11,16 @@ import {
 import type { LatLngExpression } from "leaflet";
 import { MapPin } from "lucide-react";
 import "../leafletIconsFix";
+import { supabase } from "@/lib/supabaseClient";
+import { NavLink } from "react-router-dom";
 
 interface TotemLocation {
   id: string;
   name: string;
-  description: string;
-  position: LatLngExpression;
+  description: string | null;
+  latitude: number;
+  longitude: number;
 }
-// coordonate aproximative pentru puncte din Timișoara
-const TOTEM_LOCATIONS: TotemLocation[] = [
-  {
-    id: "piata-unirii",
-    name: "Piața Unirii",
-    description: "Piață barocă în centrul istoric al Timișoarei.",
-    position: [45.75769, 21.22989],
-  },
-  {
-    id: "piata-victoriei",
-    name: "Piața Victoriei",
-    description:
-      "Axa dintre Operă și Catedrală, plină de terase și evenimente.",
-    position: [45.75371, 21.22571],
-  },
-  {
-    id: "opera-romana",
-    name: "Opera Română",
-    description: "Clădire emblematică pentru evenimente culturale.",
-    position: [45.75396, 21.22531],
-  },
-  {
-    id: "catedrala",
-    name: "Catedrala Mitropolitană",
-    description: "Simbol spiritual și arhitectural al orașului.",
-    position: [45.75149, 21.22727],
-  },
-  {
-    id: "gara-nord",
-    name: "Gara de Nord",
-    description: "Gara principală a orașului.",
-    position: [45.74892, 21.2086],
-  },
-  {
-    id: "podul-decebal",
-    name: "Podul Decebal (Bega)",
-    description: "Zona de promenadă și traversare a Begăi.",
-    position: [45.75163, 21.24066],
-  },
-];
 
 const TIMISOARA_CENTER: LatLngExpression = [45.75372, 21.22571];
 
@@ -71,6 +35,7 @@ function RecenterOnSelect({ center }: { center: LatLngExpression }) {
 }
 
 const TimisoaraMapLeaflet = () => {
+  const [totems, setTotems] = useState<TotemLocation[]>([]);
   const [selectedLocation, setSelectedLocation] =
     useState<TotemLocation | null>(null);
   const [mapCenter, setMapCenter] =
@@ -78,6 +43,24 @@ const TimisoaraMapLeaflet = () => {
   const [userLocation, setUserLocation] =
     useState<LatLngExpression | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+
+  // încărcăm totemurile din Supabase
+  useEffect(() => {
+    const loadTotems = async () => {
+      const { data, error } = await supabase
+        .from("totems")
+        .select("id, name, description, latitude, longitude");
+
+      if (error) {
+        console.error("Eroare la încărcarea totemurilor:", error);
+        return;
+      }
+
+      setTotems((data || []) as TotemLocation[]);
+    };
+
+    loadTotems();
+  }, []);
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
@@ -142,22 +125,24 @@ const TimisoaraMapLeaflet = () => {
           {/* Recentrare când se schimbă centrul */}
           <RecenterOnSelect center={mapCenter} />
 
-          {/* Marker-ele pentru totemuri */}
-          {TOTEM_LOCATIONS.map((loc) => (
+          {/* Marker-ele pentru totemuri din Supabase */}
+          {totems.map((loc) => (
             <Marker
               key={loc.id}
-              position={loc.position}
+              position={[loc.latitude, loc.longitude]}
               eventHandlers={{
                 click: () => {
                   setSelectedLocation(loc);
-                  setMapCenter(loc.position);
+                  setMapCenter([loc.latitude, loc.longitude]);
                 },
               }}
             >
               <Popup>
                 <strong>{loc.name}</strong>
                 <br />
-                <span className="text-xs">{loc.description}</span>
+                <span className="text-xs">
+                  {loc.description ?? "Totem cultural în Timișoara"}
+                </span>
               </Popup>
             </Marker>
           ))}
@@ -199,13 +184,21 @@ const TimisoaraMapLeaflet = () => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {selectedLocation.description}
+              {selectedLocation.description ??
+                "Totem cultural care va găzdui materiale artistice locale."}
             </p>
             <p className="text-xs text-muted-foreground">
               Aici poți monta totemul sau panoul cu cod QR. La scanare, aplicația
               poate deschide automat materialele artistice legate de această
               locație.
             </p>
+
+            <NavLink
+              to={`/totem/${selectedLocation.id}`}
+              className="inline-flex items-center gap-2 mt-2 text-xs font-medium text-primary hover:underline"
+            >
+              Deschide pagina totemului
+            </NavLink>
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
@@ -219,8 +212,7 @@ const TimisoaraMapLeaflet = () => {
         )}
 
         <p className="text-xs text-muted-foreground mt-2">
-          {TOTEM_LOCATIONS.length} locații configurate în Timișoara (poți adăuga
-          oricând altele în lista <code>TOTEM_LOCATIONS</code>).
+          {totems.length} locații configurate în Timișoara (date încărcate din Supabase).
         </p>
       </div>
     </div>
