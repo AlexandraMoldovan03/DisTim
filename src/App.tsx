@@ -47,6 +47,7 @@ const App = () => (
               <Route path="/totem/:totemId" element={<TotemPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="*" element={<NotFound />} />
+              <Route path="/auth" element={<AuthPage />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
