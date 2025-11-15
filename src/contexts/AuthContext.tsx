@@ -7,42 +7,41 @@ import {
   ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import type { User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. la mount: verificăm dacă există user logat
+  // Inițial: citim sesiunea curentă și ascultăm schimbările
   useEffect(() => {
-    const checkUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-
-      if (error) {
-        console.error("Eroare getUser:", error);
-      } else {
-        setUser(data.user ?? null);
+    const init = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (!error) {
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
       }
       setLoading(false);
     };
 
-    checkUser();
+    init();
 
-    // 2. ascultăm schimbările de sesiune (login/logout)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
     });
 
     return () => {
@@ -50,35 +49,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    console.log("signUp response:", { data, error });
-
-    if (error) {
-      throw error;
-    }
-  };
-
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    console.log("signIn response:", { data, error });
+    if (error) {
+      throw error;
+    }
+
+    setSession(data.session);
+    setUser(data.session?.user ?? null);
+  };
+
+  const signUp = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
     if (error) {
       throw error;
     }
+
+    const newUser = data.user;
+    if (newUser) {
+      // 👇 creăm și rând în profiles
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: newUser.id,
+        email: newUser.email,
+      });
+
+      // dacă profilul există deja, ignorăm eroarea de duplicate
+      if (profileError && profileError.code !== "23505") {
+        console.error("Eroare la inserarea în profiles:", profileError);
+      }
+    }
+
+    setSession(data.session ?? null);
+    setUser(data.user ?? null);
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
+    setSession(null);
+    setUser(null);
   };
 
   return (
@@ -86,8 +105,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         loading,
-        signUp,
         signIn,
+        signUp,
         signOut,
       }}
     >
