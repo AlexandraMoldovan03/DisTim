@@ -26,7 +26,7 @@ const CATEGORIES_TEMPLATE = [
 const Index = () => {
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [categories, setCategories] = useState<Category[]>(
-    CATEGORIES_TEMPLATE.map(cat => ({ ...cat, count: 0 }))
+    CATEGORIES_TEMPLATE.map((cat) => ({ ...cat, count: 0 }))
   );
   const [isLoadingCounts, setIsLoadingCounts] = useState(true);
 
@@ -34,7 +34,7 @@ const Index = () => {
   useEffect(() => {
     const loadCategoryCounts = async () => {
       setIsLoadingCounts(true);
-      
+
       try {
         // Fetch all contents with their categories
         const { data, error } = await supabase
@@ -60,7 +60,7 @@ const Index = () => {
         data?.forEach((content) => {
           const category = content.category?.toLowerCase().trim();
           console.log("Processing category:", category); // Debug log
-          
+
           // Handle different possible category values
           if (category === "literatura" || category === "literatură") {
             counts.literatura++;
@@ -68,7 +68,11 @@ const Index = () => {
             counts.poezie++;
           } else if (category === "muzica" || category === "muzică") {
             counts.muzica++;
-          } else if (category === "arte" || category === "arte vizuale" || category === "arte-vizuale") {
+          } else if (
+            category === "arte" ||
+            category === "arte vizuale" ||
+            category === "arte-vizuale"
+          ) {
             counts.arte++;
           }
         });
@@ -104,14 +108,14 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Header onHelpClick={() => setShowHowItWorks(true)} />
-      
-      <main className="container max-w-2xl mx-auto px-4 py-12"> 
+
+      <main className="container max-w-2xl mx-auto px-4 py-12">
         {/* Hero Section */}
         <section className="text-center mb-12 py-12 px-8 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/50 shadow-xl">
           <div className="flex justify-center mb-6">
-            <img 
-              src="/assets/logo-full.png" 
-              alt="DisTim Logo" 
+            <img
+              src="/assets/logo-full.png"
+              alt="DisTim Logo"
               className="h-20 w-auto object-contain"
             />
           </div>
@@ -126,20 +130,37 @@ const Index = () => {
         {/* Interactive Map Section */}
         <section className="mb-16">
           <div className="bg-card/90 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-lg">
-            <div className="mb-6">
-            </div>
-            
+            <div className="mb-6" />
             <TimisoaraMapLeaflet />
           </div>
         </section>
 
+        {/* ✨ AI Storyline CTA – Google Gemini */}
+        <section className="mb-16 bg-card/90 backdrop-blur-sm border border-border/50 rounded-2xl p-8 text-center shadow-lg">
+          <h2 className="text-2xl font-bold mb-3 text-foreground">
+            Lasă-l pe AI să-ți spună povestea
+          </h2>
+          <p className="text-base mb-6 text-foreground/70">
+            Folosim Google Gemini ca să generăm, pe loc, o poveste personalizată
+            despre traseul tău prin Timișoara – inspirată de locurile pe care le-ai descoperit.
+          </p>
+          <NavLink to="/story">
+            <Button className="gap-2 h-12 px-8 text-base" size="lg">
+              Vezi povestea generată de AI
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </NavLink>
+        </section>
+
         {/* Categories Grid */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-foreground">Explorează categorii</h2>
+          <h2 className="text-3xl font-bold mb-8 text-foreground">
+            Explorează categorii
+          </h2>
           <div className="grid grid-cols-2 gap-6">
             {categories.map((category) => (
-              <CategoryCard 
-                key={category.id} 
+              <CategoryCard
+                key={category.id}
                 {...category}
                 isLoading={isLoadingCounts}
               />
@@ -166,13 +187,22 @@ const Index = () => {
         {/* Footer */}
         <footer className="mt-16 pt-8 border-t border-border/50 text-center">
           <div className="flex justify-center gap-8 mb-4">
-            <NavLink to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <NavLink
+              to="/about"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
               Despre proiect
             </NavLink>
-            <NavLink to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <NavLink
+              to="/contact"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
               Contact
             </NavLink>
-            <NavLink to="/artists" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <NavLink
+              to="/artists"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
               Artiști
             </NavLink>
           </div>

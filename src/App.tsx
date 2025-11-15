@@ -20,6 +20,18 @@ import StampBar from "./components/StampBar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
 
+// 👇 folosim direct componenta cu povestea AI
+import TimisoaraStory from "@/components/TimisoaraStory";
+
+// 👇 definim aici pagina pentru ruta /story
+const StoryRoutePage = () => {
+  return (
+    <div className="min-h-[calc(100vh-56px)] w-full px-4 py-6 bg-slate-950 text-white">
+      <TimisoaraStory />
+    </div>
+  );
+};
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -31,7 +43,6 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            {/* bara cu ștampile are nevoie de AuthProvider, deci e bine aici */}
             <StampBar />
 
             <Routes>
@@ -46,8 +57,12 @@ const App = () => (
               <Route path="/scan" element={<QRScanner />} />
               <Route path="/totem/:totemId" element={<TotemPage />} />
               <Route path="/auth" element={<AuthPage />} />
+
+              {/* pagina cu povestea AI – acum e StoryRoutePage */}
+              <Route path="/story" element={<StoryRoutePage />} />
+
+              {/* 404 */}
               <Route path="*" element={<NotFound />} />
-              <Route path="/auth" element={<AuthPage />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
