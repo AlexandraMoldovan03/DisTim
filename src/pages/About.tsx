@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Header showBack title="Despre Proiect" />
       
       <main className="container max-w-2xl mx-auto px-4 py-8">
