@@ -17,9 +17,8 @@ import VirtualPassport from "./pages/VirtualPassport";
 import QRScanner from "./pages/QRScanner";
 import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
-
-// 👇 context auth
 import { AuthProvider } from "@/contexts/AuthContext";
+import AuthPage from "./pages/AuthPage";
 
 const queryClient = new QueryClient();
 
@@ -30,12 +29,9 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-
           <BrowserRouter>
-            {/* scroll sus la schimbare de route */}
             <ScrollToTop />
-
-            {/* bara cu ștampile, are nevoie de AuthProvider deasupra */}
+            {/* bara cu ștampile are nevoie de AuthProvider, deci e bine aici */}
             <StampBar />
 
             <Routes>
@@ -49,8 +45,7 @@ const App = () => (
               <Route path="/passport" element={<VirtualPassport />} />
               <Route path="/scan" element={<QRScanner />} />
               <Route path="/totem/:totemId" element={<TotemPage />} />
-
-              {/* catch-all */}
+              <Route path="/auth" element={<AuthPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
