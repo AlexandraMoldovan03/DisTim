@@ -6,7 +6,9 @@ interface CategoryCardProps {
   icon: string;
   count: number;
   colorClass: string;
+  isLoading?: boolean; // 👈 nou, optional
 }
+
 
 const CategoryCard = ({ id, name, icon, count, colorClass }: CategoryCardProps) => {
   return (
