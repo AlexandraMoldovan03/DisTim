@@ -22,7 +22,31 @@ interface TotemLocation {
   longitude: number;
 }
 
+// punct de ambrozie din view-ul ambrosia_monthly
+interface AmbrosiaPoint {
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  month: number; // înainte era month_int
+  avg_value: number;
+}
+
 const TIMISOARA_CENTER: LatLngExpression = [45.75372, 21.22571];
+
+const MONTHS = [
+  { value: 1, label: "Ian" },
+  { value: 2, label: "Feb" },
+  { value: 3, label: "Mar" },
+  { value: 4, label: "Apr" },
+  { value: 5, label: "Mai" },
+  { value: 6, label: "Iun" },
+  { value: 7, label: "Iul" },
+  { value: 8, label: "Aug" },
+  { value: 9, label: "Sep" },
+  { value: 10, label: "Oct" },
+  { value: 11, label: "Nov" },
+  { value: 12, label: "Dec" },
+];
 
 function RecenterOnSelect({ center }: { center: LatLngExpression }) {
   const map = useMap();
@@ -44,6 +68,13 @@ const TimisoaraMapLeaflet = () => {
     useState<LatLngExpression | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
 
+  // --- starea pentru heatmap ambrozie ---
+  const [selectedMonth, setSelectedMonth] = useState<number>(8); // implicit: august
+  const [heatEnabled, setHeatEnabled] = useState<boolean>(false);
+  const [ambrosiaPoints, setAmbrosiaPoints] = useState<AmbrosiaPoint[]>([]);
+  const [ambrosiaLoading, setAmbrosiaLoading] = useState<boolean>(false);
+  const [ambrosiaError, setAmbrosiaError] = useState<string | null>(null);
+
   // încărcăm totemurile din Supabase
   useEffect(() => {
     const loadTotems = async () => {
@@ -61,6 +92,40 @@ const TimisoaraMapLeaflet = () => {
 
     loadTotems();
   }, []);
+
+  // încărcăm media lunară de ambrozie pentru luna selectată (toți anii)
+  useEffect(() => {
+    const loadAmbrosia = async () => {
+      setAmbrosiaLoading(true);
+      setAmbrosiaError(null);
+
+      try {
+        const { data, error } = await supabase
+          .from("ambrosia_monthly")
+          .select("location_name, latitude, longitude, month, avg_value")
+          .eq("month", selectedMonth); // doar luna aleasă, fără an
+
+        if (error) {
+          console.error("Eroare la încărcarea ambrosia_monthly:", error);
+          setAmbrosiaError("Nu am putut încărca datele de ambrozie.");
+          setAmbrosiaPoints([]);
+        } else {
+          setAmbrosiaPoints((data || []) as AmbrosiaPoint[]);
+        }
+      } catch (e) {
+        console.error(e);
+        setAmbrosiaError(
+          "A apărut o eroare necunoscută la încărcarea datelor."
+        );
+        setAmbrosiaPoints([]);
+      } finally {
+        setAmbrosiaLoading(false);
+      }
+    };
+
+    // încărcăm de fiecare dată când se schimbă luna
+    loadAmbrosia();
+  }, [selectedMonth]);
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
@@ -89,24 +154,64 @@ const TimisoaraMapLeaflet = () => {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary" />
-            Harta totemurilor din Timișoara
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Deplasează-te pe hartă, dă zoom și apasă pe markere pentru detalii.
-          </p>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Harta totemurilor din Timișoara
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Deplasează-te pe hartă, dă zoom și apasă pe markere pentru
+              detalii.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleLocateMe}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/10 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+          >
+            <span>Centrează pe locația mea</span>
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={handleLocateMe}
-          className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/10 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
-        >
-          <span>Centrează pe locația mea</span>
-        </button>
+        {/* controale pentru heatmap */}
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">
+              Lună (medie pe toți anii):
+            </span>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              {MONTHS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={heatEnabled}
+              onChange={(e) => setHeatEnabled(e.target.checked)}
+              className="h-3 w-3"
+            />
+            <span>Arată heatmap Ambrosia</span>
+          </label>
+
+          {heatEnabled && (
+            <span className="text-[11px] text-muted-foreground">
+              Cercurile colorate arată <strong>concentrația medie</strong> de
+              polen Ambrosia pentru luna selectată (valorile de iarnă sunt 0).
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Harta propriu-zisă */}
@@ -146,6 +251,31 @@ const TimisoaraMapLeaflet = () => {
               </Popup>
             </Marker>
           ))}
+
+          {/* Heatmap Ambrosia – cercuri scalate după avg_value */}
+          {heatEnabled &&
+            ambrosiaPoints
+              .filter((p) => p.avg_value > 0) // nu desenăm cercuri pentru 0
+              .map((p) => {
+                // normalizare: presupunem că 0–15 e range-ul uzual
+                const intensity = Math.min(p.avg_value / 15, 1);
+
+                // radius mai mare ca să fie clar vizibil
+                const radius = 80 + p.avg_value * 30;
+
+                return (
+                  <Circle
+                    key={`heat-${p.location_name}-${p.month}`}
+                    center={[p.latitude, p.longitude]}
+                    radius={radius}
+                    pathOptions={{
+                      color: "transparent",
+                      fillColor: "#ef4444",
+                      fillOpacity: 0.2 + 0.6 * intensity,
+                    }}
+                  />
+                );
+              })}
 
           {/* Locația utilizatorului (dacă e disponibilă) */}
           {userLocation && (
@@ -188,9 +318,9 @@ const TimisoaraMapLeaflet = () => {
                 "Totem cultural care va găzdui materiale artistice locale."}
             </p>
             <p className="text-xs text-muted-foreground">
-              Aici poți monta totemul sau panoul cu cod QR. La scanare, aplicația
-              poate deschide automat materialele artistice legate de această
-              locație.
+              Aici poți monta totemul sau panoul cu cod QR. La scanare,
+              aplicația poate deschide automat materialele artistice legate de
+              această locație.
             </p>
 
             <NavLink
@@ -211,8 +341,25 @@ const TimisoaraMapLeaflet = () => {
           <p className="text-xs text-red-400 mt-1">{geoError}</p>
         )}
 
+        {ambrosiaError && (
+          <p className="text-xs text-red-400 mt-1">{ambrosiaError}</p>
+        )}
+
+        {heatEnabled && ambrosiaLoading && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Se încarcă datele de ambrozie pentru luna selectată…
+          </p>
+        )}
+
+        {heatEnabled && !ambrosiaLoading && ambrosiaPoints.length === 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Nu avem încă date de ambrozie pentru luna selectată.
+          </p>
+        )}
+
         <p className="text-xs text-muted-foreground mt-2">
-          {totems.length} locații configurate în Timișoara (date încărcate din Supabase).
+          {totems.length} locații configurate în Timișoara (date încărcate din
+          Supabase).
         </p>
       </div>
     </div>
