@@ -114,7 +114,7 @@ const Index = () => {
         <section className="text-center mb-12 py-12 px-8 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/50 shadow-xl">
           <div className="flex justify-center mb-6">
             <img
-              src="/assets/logo-full.png"
+              src="/logo-full.png"
               alt="DisTim Logo"
               className="h-20 w-auto object-contain"
             />

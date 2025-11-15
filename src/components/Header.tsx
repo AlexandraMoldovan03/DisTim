@@ -34,7 +34,7 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
 
           <NavLink to="/" className="flex items-center gap-2">
             <img
-              src="/assets/logo-full.png"
+              src="/logo-full.png"
               alt="DisTim Logo"
               className="h-8 w-auto object-contain"
             />
