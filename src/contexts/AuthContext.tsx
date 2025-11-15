@@ -4,7 +4,7 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode,
+  type ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
@@ -23,32 +23,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. La mount, aflăm user-ul curent
-  useEffect(() => {
-    const init = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (!error) {
-        setUser(data.user ?? null);
+  // verificăm user-ul curent folosind mai întâi sesiunea
+  const checkUser = async () => {
+    try {
+      setLoading(true);
+
+      // 1. luăm sesiunea
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Eroare getSession:", error.message);
+        setUser(null);
+        setLoading(false);
+        return;
       }
 
+      // 2. dacă nu există sesiune, nu mai chemăm getUser
+      if (!session) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // 3. avem sesiune, putem cere user-ul
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error("Eroare getUser:", userError.message);
+        setUser(null);
+      } else {
+        setUser(user);
+      }
+    } catch (e) {
+      console.error("Eroare necunoscută în checkUser:", e);
+      setUser(null);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    init();
+  useEffect(() => {
+    // la mount
+    checkUser();
 
-    // 2. Ascultăm schimbările de auth (login/logout/register)
+    // ascultăm schimbările de auth (login/logout/register)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  // helper: creăm rând în profiles
+  // helper: creăm rând în profiles dacă nu există
   const createProfileIfNeeded = async (user: User | null) => {
     if (!user) return;
 
@@ -125,11 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
