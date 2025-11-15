@@ -1,6 +1,7 @@
-import { HelpCircle, ArrowLeft } from "lucide-react";
+import { HelpCircle, ArrowLeft, Ticket } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import ThemeToggle from "./ThemeToggle";
 
 interface HeaderProps {
   showBack?: boolean;
@@ -25,20 +26,38 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           ) : null}
-          <NavLink to="/" className="text-lg font-bold tracking-tight">
-            {title || "Cultura în Transit"}
+          <NavLink to="/" className="flex items-center gap-2">
+            <img 
+              src="/assets/logo-full.png" 
+              alt="DisTim Logo" 
+              className="h-8 w-auto object-contain"
+            />
+            {title && <span className="text-lg font-bold tracking-tight">{title}</span>}
           </NavLink>
         </div>
-        {onHelpClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onHelpClick}
-            className="hover:bg-secondary"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </Button>
-        )}
+         <div className="flex items-center gap-2">
+          <NavLink to="/passport">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-secondary"
+              title="Virtual Passport"
+            >
+              <Ticket className="h-5 w-5" />
+            </Button>
+          </NavLink>
+          {onHelpClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onHelpClick}
+              className="hover:bg-secondary"
+            >
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+          )}
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
