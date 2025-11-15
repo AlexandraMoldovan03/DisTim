@@ -131,6 +131,15 @@ All colors MUST be HSL.
   }
 }
 
+@media (max-width: 640px) {
+  :root {
+    --bg-image: url('/assets/backgrounds/light P.jpg');
+  }
+  .dark {
+    --bg-image: url('/assets/backgrounds/dark P.jpg');
+  }
+}
+
 @layer base {
   * {
     border-color: hsl(var(--border));
