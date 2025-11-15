@@ -84,6 +84,7 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --bg-image: url('/assets/backgrounds/light H.jpg');
   }
 
   .dark {
@@ -126,36 +127,44 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --bg-image: url('/assets/backgrounds/dark H.jpg');
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-        background-image: url('/assets/bg.png');
+  }
+
+  /* Background image sits behind everything in a fixed pseudo-element */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--bg-image);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
+    z-index: -2;
+    pointer-events: none;
   }
 
-  body::before {
+  /* Overlay / dimmer sits above the image but behind content */
+  body::after {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.06);
     z-index: -1;
     pointer-events: none;
   }
 
-  .dark body::before {
+  .dark body::after {
     background-color: rgba(0, 0, 0, 0.75);
   }
   
@@ -189,6 +198,7 @@ All colors MUST be HSL.
   }
   
   .content-card {
-    @apply bg-card rounded-xl shadow-[var(--shadow-sm)] border border-border/50;
+    @apply bg-card rounded-xl shadow-[var(--shadow-sm)] border;
+    border-color: hsl(var(--border) / 0.5);
   }
 }

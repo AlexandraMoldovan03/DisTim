@@ -118,7 +118,7 @@ const SubmitArt = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <main className="container max-w-2xl mx-auto px-4 py-8 space-y-8">
         {/* back link */}
         <NavLink
