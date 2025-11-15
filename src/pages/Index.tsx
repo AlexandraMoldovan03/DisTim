@@ -6,18 +6,91 @@ import TimisoaraMapLeaflet from "@/components/TimisoaraMapLeaflet";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
 
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
+  colorClass: string;
+}
 
-
-const CATEGORIES = [
-  { id: "literatura", name: "Literatură", icon: "📖", count: 12, colorClass: "border-literatura" },
-  { id: "poezie", name: "Poezie", icon: "✍️", count: 18, colorClass: "border-poezie" },
-  { id: "muzica", name: "Muzică", icon: "🎵", count: 8, colorClass: "border-muzica" },
-  { id: "arte", name: "Arte Vizuale", icon: "🎨", count: 15, colorClass: "border-arte" },
+const CATEGORIES_TEMPLATE = [
+  { id: "literatura", name: "Literatură", icon: "📖", colorClass: "border-literatura" },
+  { id: "poezie", name: "Poezie", icon: "✍️", colorClass: "border-poezie" },
+  { id: "muzica", name: "Muzică", icon: "🎵", colorClass: "border-muzica" },
+  { id: "arte", name: "Arte Vizuale", icon: "🎨", colorClass: "border-arte" },
 ];
 
 const Index = () => {
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(
+    CATEGORIES_TEMPLATE.map(cat => ({ ...cat, count: 0 }))
+  );
+  const [isLoadingCounts, setIsLoadingCounts] = useState(true);
+
+  // Load category counts from Supabase
+  useEffect(() => {
+    const loadCategoryCounts = async () => {
+      setIsLoadingCounts(true);
+      
+      try {
+        // Fetch all contents with their categories
+        const { data, error } = await supabase
+          .from("contents")
+          .select("category");
+
+        if (error) {
+          console.error("Error loading category counts:", error);
+          console.error("Error details:", error.message);
+          return;
+        }
+
+        console.log("Fetched contents:", data); // Debug log
+
+        // Count contents per category
+        const counts: Record<string, number> = {
+          literatura: 0,
+          poezie: 0,
+          muzica: 0,
+          arte: 0,
+        };
+
+        data?.forEach((content) => {
+          const category = content.category?.toLowerCase().trim();
+          console.log("Processing category:", category); // Debug log
+          
+          // Handle different possible category values
+          if (category === "literatura" || category === "literatură") {
+            counts.literatura++;
+          } else if (category === "poezie") {
+            counts.poezie++;
+          } else if (category === "muzica" || category === "muzică") {
+            counts.muzica++;
+          } else if (category === "arte" || category === "arte vizuale" || category === "arte-vizuale") {
+            counts.arte++;
+          }
+        });
+
+        console.log("Final counts:", counts); // Debug log
+
+        // Update categories with real counts
+        const updatedCategories = CATEGORIES_TEMPLATE.map((cat) => ({
+          ...cat,
+          count: counts[cat.id] || 0,
+        }));
+
+        setCategories(updatedCategories);
+      } catch (err) {
+        console.error("Unexpected error loading counts:", err);
+      } finally {
+        setIsLoadingCounts(false);
+      }
+    };
+
+    loadCategoryCounts();
+  }, []);
 
   useEffect(() => {
     // Show modal for first-time visitors
@@ -34,7 +107,7 @@ const Index = () => {
       
       <main className="container max-w-2xl mx-auto px-4 py-12"> 
         {/* Hero Section */}
-         <section className="text-center mb-12 py-12 px-8 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/50 shadow-xl">
+        <section className="text-center mb-12 py-12 px-8 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/50 shadow-xl">
           <div className="flex justify-center mb-6">
             <img 
               src="/assets/logo-full.png" 
@@ -52,15 +125,24 @@ const Index = () => {
 
         {/* Interactive Map Section */}
         <section className="mb-16">
-          <TimisoaraMapLeaflet />
+          <div className="bg-card/90 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-lg">
+            <div className="mb-6">
+            </div>
+            
+            <TimisoaraMapLeaflet />
+          </div>
         </section>
 
         {/* Categories Grid */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-8 text-foreground">Explorează categorii</h2>
           <div className="grid grid-cols-2 gap-6">
-            {CATEGORIES.map((category) => (
-              <CategoryCard key={category.id} {...category} />
+            {categories.map((category) => (
+              <CategoryCard 
+                key={category.id} 
+                {...category}
+                isLoading={isLoadingCounts}
+              />
             ))}
           </div>
         </section>
@@ -82,7 +164,7 @@ const Index = () => {
         </section>
 
         {/* Footer */}
-         <footer className="mt-16 pt-8 border-t border-border/50 text-center">
+        <footer className="mt-16 pt-8 border-t border-border/50 text-center">
           <div className="flex justify-center gap-8 mb-4">
             <NavLink to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Despre proiect
@@ -95,7 +177,7 @@ const Index = () => {
             </NavLink>
           </div>
           <p className="text-xs text-muted-foreground/70">
-            © 2024 DisTim - Cultura în Transit
+            © 2025 DisTim - Discover Timișoara
           </p>
         </footer>
       </main>
