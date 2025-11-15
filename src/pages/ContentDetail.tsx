@@ -101,7 +101,7 @@ const ContentDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+      <div className="min-h-screen text-foreground flex items-center justify-center">
         <p className="text-sm text-muted-foreground">
           Se încarcă materialul...
         </p>
@@ -129,7 +129,7 @@ const ContentDetail = () => {
     content.media_url && /\.(mp3|wav|ogg)$/i.test(content.media_url);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <main className="container max-w-3xl mx-auto px-4 py-8 space-y-8">
         {/* back link */}
         <NavLink
