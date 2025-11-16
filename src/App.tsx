@@ -17,17 +17,20 @@ import VirtualPassport from "./pages/VirtualPassport";
 import QRScanner from "./pages/QRScanner";
 import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
+//import AuthPage from "./pages/AuthPage";
 
-// din feature-gemini-story
-import { AuthProvider } from "@/contexts/AuthContext";
-import AuthPage from "./pages/AuthPage";
-import StoryPlayground from "./pages/StoryPlayground";
-import GeminiStoryPage from "./pages/GeminiStoryPage";
-
-// din branch main – păstrat
 import TotemBonusPage from "@/pages/TotemBonusPage";
+// dacă vrei și povestea AI, decomentezi astea:
+// import TimisoaraStory from "@/components/TimisoaraStory";
 
 const queryClient = new QueryClient();
+
+// dacă vrei ruta /story:
+// const StoryRoutePage = () => (
+//   <div className="min-h-[calc(100vh-56px)] w-full px-4 py-6 bg-slate-950 text-white">
+//     <TimisoaraStory />
+//   </div>
+// );
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -37,6 +40,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
+          {/* bara cu ștampile – ok aici */}
           <StampBar />
 
           <Routes>
@@ -51,14 +55,14 @@ const App = () => (
             <Route path="/scan" element={<QRScanner />} />
 
             <Route path="/totem/:totemId" element={<TotemPage />} />
-            <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
+             <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
+            {/* <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
 
-            {/* Auth */}
-            <Route path="/auth" element={<AuthPage />} />
+            callback-ul de la Auth0 */}
+           {/*} <Route path="/auth" element={<AuthPage />} />*/}
 
-            {/* Feature Gemini */}
-            <Route path="/story" element={<StoryPlayground />} />
-            <Route path="/gemini" element={<GeminiStoryPage />} />
+            {/* dacă vrei și povestea AI */}
+            {/* <Route path="/story" element={<StoryRoutePage />} /> */}
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
