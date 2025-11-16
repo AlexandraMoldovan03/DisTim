@@ -1,14 +1,16 @@
 import { NavLink } from "react-router-dom";
-
 interface CategoryCardProps {
   id: string;
   name: string;
   icon: string;
   count: number;
   colorClass: string;
+  isLoading?: boolean;   // 👈 nou, optional
 }
 
-const CategoryCard = ({ id, name, icon, count, colorClass }: CategoryCardProps) => {
+
+const CategoryCard = ({ id, name, icon, count, colorClass, isLoading }: CategoryCardProps) => {
+
   return (
     <NavLink
       to={`/category/${id}`}
@@ -26,8 +28,9 @@ const CategoryCard = ({ id, name, icon, count, colorClass }: CategoryCardProps) 
       </span>
       <h3 className="text-lg font-bold text-center text-foreground">{name}</h3>
       <span className="absolute top-4 right-4 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium">
-        {count}
-      </span>
+  {isLoading ? "…" : count}
+</span>
+
     </NavLink>
   );
 };

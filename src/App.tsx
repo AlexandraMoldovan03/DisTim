@@ -19,18 +19,8 @@ import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
-
-// 👇 folosim direct componenta cu povestea AI
-import TimisoaraStory from "@/components/TimisoaraStory";
-
-// 👇 definim aici pagina pentru ruta /story
-const StoryRoutePage = () => {
-  return (
-    <div className="min-h-[calc(100vh-56px)] w-full px-4 py-6 bg-slate-950 text-white">
-      <TimisoaraStory />
-    </div>
-  );
-};
+import StoryPlayground from "./pages/StoryPlayground";
+import GeminiStoryPage from "./pages/GeminiStoryPage";
 
 const queryClient = new QueryClient();
 
@@ -58,8 +48,11 @@ const App = () => (
               <Route path="/totem/:totemId" element={<TotemPage />} />
               <Route path="/auth" element={<AuthPage />} />
 
-              {/* pagina cu povestea AI – acum e StoryRoutePage */}
-              <Route path="/story" element={<StoryRoutePage />} />
+              {/* pagina veche de story playground */}
+              <Route path="/story" element={<StoryPlayground />} />
+
+              {/* noul side-track cu Gemini */}
+              <Route path="/gemini" element={<GeminiStoryPage />} />
 
               {/* 404 */}
               <Route path="*" element={<NotFound />} />

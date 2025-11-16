@@ -23,6 +23,8 @@ import {
 } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import { saveStampToStorage, Stamp } from "@/components/StampBar";
+import { saveUserStamp } from "@/lib/passportSupabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ContentCategory = "literatura" | "poezie" | "muzica" | "arte";
 
@@ -80,6 +82,7 @@ function RecenterMap({ center }: { center: LatLngExpression }) {
 const TotemPage = () => {
   const { totemId } = useParams<{ totemId: string }>();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
 
   const [totem, setTotem] = useState<TotemData | null>(null);
   const [items, setItems] = useState<ContentItem[]>([]);
@@ -155,7 +158,7 @@ const TotemPage = () => {
       if (qrParam && qrParam === tData.qr_slug) {
         setUnlocked(true);
 
-        // salvăm ștampila local
+        // 3.1 salvăm ștampila local (bară vizuală)
         if (tData.stamp_label) {
           const stamp: Stamp = {
             totem_id: tData.id,
@@ -164,11 +167,26 @@ const TotemPage = () => {
           };
           saveStampToStorage(stamp);
         }
+
+        // 3.2 salvăm ștampila și în Supabase pentru povestea AI
+        if (user) {
+          const rawUserId = (user as any).id || (user as any).sub;
+          if (rawUserId) {
+            try {
+              await saveUserStamp(String(rawUserId), tData.id);
+            } catch (e) {
+              console.error(
+                "Eroare la saveUserStamp în TotemPage:",
+                e
+              );
+            }
+          }
+        }
       }
     };
 
     loadData();
-  }, [totemId, searchParams]);
+  }, [totemId, searchParams, user]);
 
   if (loading) {
     return (
