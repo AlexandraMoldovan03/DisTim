@@ -19,7 +19,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
-
+import TotemBonusPage from "@/pages/TotemBonusPage";
 // 👇 folosim direct componenta cu povestea AI
 import TimisoaraStory from "@/components/TimisoaraStory";
 
@@ -57,7 +57,8 @@ const App = () => (
               <Route path="/scan" element={<QRScanner />} />
               <Route path="/totem/:totemId" element={<TotemPage />} />
               <Route path="/auth" element={<AuthPage />} />
-
+               <Route path="/totem/:totemId" element={<TotemPage />} />
+              <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
               {/* pagina cu povestea AI – acum e StoryRoutePage */}
               <Route path="/story" element={<StoryRoutePage />} />
 
