@@ -1,16 +1,27 @@
+// src/lib/passportStorage.ts
+
+// 👇 UN SINGUR tip Badge – îl folosim și pentru pașaport, și pentru unlock
 export interface Badge {
+  // id = id-ul totemului (ex: "catedrala", "piata-unirii")
   id: string;
   locationName: string;
+
+  // info artist inventat / asociat
   artistName: string;
   artistBio: string;
-  collectedAt: string;
   category: string;
+
+  // când am „colectat” ștampila
+  collectedAt: string;
+
+  // opțional: poți folosi emoji pentru ștampilă
+  stampEmoji?: string | null;
 }
 
 const STORAGE_KEY = "distim_passport_badges";
 
 export const passportStorage = {
-  getBadges: (): Badge[] => {
+  getBadges(): Badge[] {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
@@ -20,10 +31,10 @@ export const passportStorage = {
     }
   },
 
-  addBadge: (badge: Badge): void => {
+  addBadge(badge: Badge): void {
     try {
       const badges = passportStorage.getBadges();
-      // Check if badge already exists
+      // nu duplicăm – un singur badge per totem (id)
       const exists = badges.some((b) => b.id === badge.id);
       if (!exists) {
         badges.push(badge);
@@ -34,12 +45,13 @@ export const passportStorage = {
     }
   },
 
-  hasBadge: (locationId: string): boolean => {
+  // 👉 asta o folosim pentru "totemul e deja deblocat?"
+  hasBadge(totemId: string): boolean {
     const badges = passportStorage.getBadges();
-    return badges.some((b) => b.id === locationId);
+    return badges.some((b) => b.id === totemId);
   },
 
-  clearBadges: (): void => {
+  clearBadges(): void {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
@@ -48,7 +60,8 @@ export const passportStorage = {
   },
 };
 
-// Sample artists for random selection
+// --- artiști sample pentru pașaport (rămâne cum aveai) ---
+
 export const SAMPLE_ARTISTS = [
   {
     name: "Maria Popescu",

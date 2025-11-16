@@ -1,7 +1,6 @@
 // src/components/Header.tsx
-// src/components/Header.tsx
 import { HelpCircle, ArrowLeft, Ticket, User } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -14,7 +13,20 @@ interface HeaderProps {
 
 const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading, loginWithRedirect, logout } = useAuth0();
+  const location = useLocation();
+  const { user, isAuthenticated, isLoading, loginWithRedirect, logout } =
+    useAuth0();
+
+  // Login care știe unde să se întoarcă după autentificare
+  const handleLogin = () => {
+    const returnTo = location.pathname + location.search;
+
+    loginWithRedirect({
+      appState: {
+        returnTo, // va fi citit în AuthPage din handleRedirectCallback()
+      },
+    });
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border shadow-sm">
@@ -34,7 +46,7 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
 
           <NavLink to="/" className="flex items-center gap-2">
             <img
-              src="/assets/logo-full.png"
+              src="/logo-full.png"
               alt="DisTim Logo"
               className="h-8 w-auto object-contain"
             />
@@ -71,8 +83,8 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
           <ThemeToggle />
 
           {/* Authentication */}
-          {!isLoading && (
-            isAuthenticated ? (
+          {!isLoading &&
+            (isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <span className="hidden sm:inline text-xs text-muted-foreground max-w-[140px] truncate">
                   {user?.email}
@@ -82,7 +94,9 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
                   size="icon"
                   className="hover:bg-secondary"
                   onClick={() =>
-                    logout({ logoutParams: { returnTo: window.location.origin } })
+                    logout({
+                      logoutParams: { returnTo: window.location.origin },
+                    })
                   }
                   title="Deconectare"
                 >
@@ -94,14 +108,13 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-1"
-                onClick={() => loginWithRedirect()}
+                onClick={handleLogin}
               >
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Autentificare</span>
                 <span className="sm:hidden">Login</span>
               </Button>
-            )
-          )}
+            ))}
         </div>
       </div>
     </header>

@@ -1,7 +1,7 @@
 // src/components/StampBar.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export interface Stamp {
   totem_id: string;
@@ -29,37 +29,20 @@ export function saveStampToStorage(stamp: Stamp) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 }
 
-// funcție utilă: salvează în DB dacă user logat, altfel în localStorage
-export async function saveStampForUserOrLocal(
-  stamp: Stamp,
-  userId: string | null
-) {
-  if (userId) {
-    await supabase
-      .from("user_stamps")
-      .upsert(
-        {
-          user_id: userId,
-          totem_id: stamp.totem_id,
-        },
-        { onConflict: "user_id,totem_id" }
-      );
-    // nu stocăm label/emoji în tabel, le luăm din join cu totems
-  } else {
-    saveStampToStorage(stamp);
-  }
-}
-
 const StampBar = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth0();
   const [stamps, setStamps] = useState<Stamp[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      if (user) {
+      if (isLoading) return;
+
+      if (isAuthenticated && user?.sub) {
+        // luăm toate totemele deblocate pentru userul curent
         const { data, error } = await supabase
-          .from("user_stamps")
-          .select("totem_id, totems ( stamp_label, stamp_emoji )");
+          .from("totem_unlocks")
+          .select("totem_id, totems ( stamp_label, stamp_emoji )")
+          .eq("auth0_sub", user.sub);
 
         if (error) {
           console.error("Eroare la încărcarea ștampilelor:", error);
@@ -76,12 +59,13 @@ const StampBar = () => {
 
         setStamps(mapped);
       } else {
+        // guest: folosim doar localStorage
         setStamps(loadStampsFromStorage());
       }
     };
 
     load();
-  }, [user]);
+  }, [isAuthenticated, isLoading, user?.sub]);
 
   if (!stamps.length) return null;
 

@@ -9,8 +9,6 @@ import {
   PenLine,
   Palette,
   Eye,
-  Lock,
-  Unlock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import "../leafletIconsFix";
@@ -33,7 +31,7 @@ interface TotemData {
   name: string;
   description: string | null;
   teaser_text: string | null;
-  locked_text: string | null;
+  locked_text: string | null; // îl poți folosi în TotemBonusPage
   qr_slug: string | null;
   stamp_label: string | null;
   stamp_emoji: string | null;
@@ -175,10 +173,7 @@ const TotemPage = () => {
             try {
               await saveUserStamp(String(rawUserId), tData.id);
             } catch (e) {
-              console.error(
-                "Eroare la saveUserStamp în TotemPage:",
-                e
-              );
+              console.error("Eroare la saveUserStamp în TotemPage:", e);
             }
           }
         }
@@ -246,6 +241,11 @@ const TotemPage = () => {
                     {totem.description}
                   </p>
                 )}
+                {unlocked && (
+                  <p className="mt-2 text-xs font-medium text-emerald-900 bg-emerald-100 inline-flex px-3 py-1 rounded-full">
+                    🔓 Totem deblocat prin QR
+                  </p>
+                )}
               </div>
             </div>
 
@@ -253,20 +253,6 @@ const TotemPage = () => {
               <span className="inline-flex items-center gap-1">
                 <Eye className="w-3 h-3" />
                 {totalViews} vizualizări totale
-              </span>
-
-              <span className="inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-1 border border-border/60">
-                {unlocked ? (
-                  <>
-                    <Unlock className="w-3 h-3" />
-                    <span>Conținut deblocat prin QR</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-3 h-3" />
-                    <span>Scanează codul QR din stație pentru bonus</span>
-                  </>
-                )}
               </span>
             </div>
           </div>
@@ -276,16 +262,6 @@ const TotemPage = () => {
             <p className="text-sm md:text-base text-foreground/90 mt-2">
               {totem.teaser_text}
             </p>
-          )}
-
-          {/* locked text – doar când unlocked e true */}
-          {unlocked && totem.locked_text && (
-            <div className="mt-3 rounded-xl bg-background/80 border border-border/60 p-3 text-sm text-foreground">
-              <p className="font-medium mb-1">
-                {totem.stamp_emoji || "🏅"} Poveste bonus
-              </p>
-              <p className="whitespace-pre-line">{totem.locked_text}</p>
-            </div>
           )}
         </section>
 

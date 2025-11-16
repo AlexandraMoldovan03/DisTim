@@ -17,51 +17,56 @@ import VirtualPassport from "./pages/VirtualPassport";
 import QRScanner from "./pages/QRScanner";
 import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
+
+// din feature-gemini-story
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import StoryPlayground from "./pages/StoryPlayground";
 import GeminiStoryPage from "./pages/GeminiStoryPage";
 
+// din branch main – păstrat
+import TotemBonusPage from "@/pages/TotemBonusPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
-  <AuthProvider>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <StampBar />
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <StampBar />
 
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/category/:categoryId" element={<CategoryList />} />
-              <Route path="/content/:contentId" element={<ContentDetail />} />
-              <Route path="/submit" element={<SubmitArt />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<About />} />
-              <Route path="/artists" element={<About />} />
-              <Route path="/passport" element={<VirtualPassport />} />
-              <Route path="/scan" element={<QRScanner />} />
-              <Route path="/totem/:totemId" element={<TotemPage />} />
-              <Route path="/auth" element={<AuthPage />} />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/category/:categoryId" element={<CategoryList />} />
+            <Route path="/content/:contentId" element={<ContentDetail />} />
+            <Route path="/submit" element={<SubmitArt />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<About />} />
+            <Route path="/artists" element={<About />} />
+            <Route path="/passport" element={<VirtualPassport />} />
+            <Route path="/scan" element={<QRScanner />} />
 
-              {/* pagina veche de story playground */}
-              <Route path="/story" element={<StoryPlayground />} />
+            <Route path="/totem/:totemId" element={<TotemPage />} />
+            <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
 
-              {/* noul side-track cu Gemini */}
-              <Route path="/gemini" element={<GeminiStoryPage />} />
+            {/* Auth */}
+            <Route path="/auth" element={<AuthPage />} />
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </AuthProvider>
+            {/* Feature Gemini */}
+            <Route path="/story" element={<StoryPlayground />} />
+            <Route path="/gemini" element={<GeminiStoryPage />} />
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
 );
 
 export default App;
