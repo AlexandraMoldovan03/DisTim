@@ -1,7 +1,7 @@
 // src/components/StampBar.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "@/contexts/AuthContext";
+// 🔴 am scos: import { useAuth } from "@/contexts/AuthContext";
 
 export interface Stamp {
   totem_id: string;
@@ -51,12 +51,15 @@ export async function saveStampForUserOrLocal(
 }
 
 const StampBar = () => {
-  const { user } = useAuth();
+  // 🔴 temporar NU mai avem user – tratăm ca și cum ar fi mereu neautentificat
+  const user = null;
+
   const [stamps, setStamps] = useState<Stamp[]>([]);
 
   useEffect(() => {
     const load = async () => {
       if (user) {
+        // codul ăsta NU se va apela momentan, pentru că user = null
         const { data, error } = await supabase
           .from("user_stamps")
           .select("totem_id, totems ( stamp_label, stamp_emoji )");
@@ -76,6 +79,7 @@ const StampBar = () => {
 
         setStamps(mapped);
       } else {
+        // ne bazăm DOAR pe localStorage
         setStamps(loadStampsFromStorage());
       }
     };

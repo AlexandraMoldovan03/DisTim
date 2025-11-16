@@ -17,59 +17,58 @@ import VirtualPassport from "./pages/VirtualPassport";
 import QRScanner from "./pages/QRScanner";
 import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
-import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import TotemBonusPage from "@/pages/TotemBonusPage";
-// 👇 folosim direct componenta cu povestea AI
-import TimisoaraStory from "@/components/TimisoaraStory";
-
-// 👇 definim aici pagina pentru ruta /story
-const StoryRoutePage = () => {
-  return (
-    <div className="min-h-[calc(100vh-56px)] w-full px-4 py-6 bg-slate-950 text-white">
-      <TimisoaraStory />
-    </div>
-  );
-};
+// dacă vrei și povestea AI, decomentezi astea:
+// import TimisoaraStory from "@/components/TimisoaraStory";
 
 const queryClient = new QueryClient();
 
+// dacă vrei ruta /story:
+// const StoryRoutePage = () => (
+//   <div className="min-h-[calc(100vh-56px)] w-full px-4 py-6 bg-slate-950 text-white">
+//     <TimisoaraStory />
+//   </div>
+// );
+
 const App = () => (
-  <AuthProvider>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <StampBar />
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          {/* bara cu ștampile – ok aici */}
+          <StampBar />
 
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/category/:categoryId" element={<CategoryList />} />
-              <Route path="/content/:contentId" element={<ContentDetail />} />
-              <Route path="/submit" element={<SubmitArt />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<About />} />
-              <Route path="/artists" element={<About />} />
-              <Route path="/passport" element={<VirtualPassport />} />
-              <Route path="/scan" element={<QRScanner />} />
-              <Route path="/totem/:totemId" element={<TotemPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-               <Route path="/totem/:totemId" element={<TotemPage />} />
-              <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
-              {/* pagina cu povestea AI – acum e StoryRoutePage */}
-              <Route path="/story" element={<StoryRoutePage />} />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/category/:categoryId" element={<CategoryList />} />
+            <Route path="/content/:contentId" element={<ContentDetail />} />
+            <Route path="/submit" element={<SubmitArt />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<About />} />
+            <Route path="/artists" element={<About />} />
+            <Route path="/passport" element={<VirtualPassport />} />
+            <Route path="/scan" element={<QRScanner />} />
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </AuthProvider>
+            <Route path="/totem/:totemId" element={<TotemPage />} />
+            <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
+
+            {/* callback-ul de la Auth0 */}
+            <Route path="/auth" element={<AuthPage />} />
+
+            {/* dacă vrei și povestea AI */}
+            {/* <Route path="/story" element={<StoryRoutePage />} /> */}
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
 );
 
 export default App;

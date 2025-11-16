@@ -1,19 +1,18 @@
-//
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css'; // Importing the main CSS file
-import App from './App.tsx';
-import { Auth0Provider } from '@auth0/auth0-react';
+// src/main.tsx
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
+import { Auth0Provider } from "@auth0/auth0-react";
 import "leaflet/dist/leaflet.css";
 
-
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Auth0Provider
       domain={import.meta.env.VITE_AUTH0_DOMAIN}
       clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       authorizationParams={{
-        redirect_uri: window.location.origin
+        redirect_uri: window.location.origin,  // ✅ ca versiunea veche
       }}
     >
       <App />

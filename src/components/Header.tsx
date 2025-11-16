@@ -17,15 +17,13 @@ const Header = ({ showBack = false, title, onHelpClick }: HeaderProps) => {
   const { user, isAuthenticated, isLoading, loginWithRedirect, logout } =
     useAuth0();
 
-  // 👇 Login care știe unde să se întoarcă după autentificare
+  // Login care știe unde să se întoarcă după autentificare
   const handleLogin = () => {
     const returnTo = location.pathname + location.search;
 
     loginWithRedirect({
-      authorizationParams: {
-        redirect_uri: `${window.location.origin}/auth?returnTo=${encodeURIComponent(
-          returnTo
-        )}`,
+      appState: {
+        returnTo, // va fi citit în AuthPage din handleRedirectCallback()
       },
     });
   };

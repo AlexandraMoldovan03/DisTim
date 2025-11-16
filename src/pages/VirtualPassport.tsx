@@ -1,3 +1,4 @@
+// src/pages/VirtualPassport.tsx
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import Header from "@/components/Header";
@@ -16,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import StampBook from "@/components/StampBook"; // 👈 nou
 
 const VirtualPassport = () => {
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -56,7 +58,9 @@ const VirtualPassport = () => {
             <Award className="w-6 h-6" />
             <span>{badges.length}</span>
             <span className="text-base font-normal text-foreground/70">
-              {badges.length === 1 ? "insignă colectată" : "insigne colectate"}
+              {badges.length === 1
+                ? "insignă colectată"
+                : "insigne colectate"}
             </span>
           </div>
         </section>
@@ -71,42 +75,44 @@ const VirtualPassport = () => {
           </NavLink>
         </section>
 
+        {/* 📖 Cartea cu ștampile (doar totemurile vizitate) */}
+        <StampBook badges={badges} />
+
         {/* Badges Grid */}
         {badges.length > 0 ? (
-          <>
-            <section className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Insignele Tale</h2>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Trash2 className="w-4 h-4" />
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Insignele Tale</h2>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Șterge toate
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Ești sigur?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Această acțiune va șterge toate insignele colectate.
+                      Această acțiune nu poate fi anulată.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Anulează</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearBadges}>
                       Șterge toate
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Ești sigur?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Această acțiune va șterge toate insignele colectate. Această acțiune nu poate fi anulată.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Anulează</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleClearBadges}>
-                        Șterge toate
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-              <div className="grid gap-4">
-                {badges.map((badge) => (
-                  <BadgeCard key={badge.id} badge={badge} />
-                ))}
-              </div>
-            </section>
-          </>
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+            <div className="grid gap-4">
+              {badges.map((badge) => (
+                <BadgeCard key={badge.id} badge={badge} />
+              ))}
+            </div>
+          </section>
         ) : (
           <section className="text-center py-12">
             <div className="mb-4 opacity-50">
@@ -114,7 +120,8 @@ const VirtualPassport = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Nicio insignă încă</h3>
             <p className="text-muted-foreground mb-6">
-              Scanează coduri QR din stațiile culturale pentru a colecta insigne
+              Scanează coduri QR din stațiile culturale pentru a colecta
+              insigne
             </p>
             <NavLink to="/scan">
               <Button className="gap-2">
