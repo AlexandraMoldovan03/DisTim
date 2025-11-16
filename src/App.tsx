@@ -20,6 +20,9 @@ import StampBar from "./components/StampBar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
 
+import PrivateAdminRoute from "@/components/PrivateAdminRoute";
+import AdminPage from "./pages/AdminPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -48,6 +51,14 @@ const App = () => (
               <Route path="/auth" element={<AuthPage />} />
               <Route path="*" element={<NotFound />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route
+                  path="/admin"
+                  element={
+                    <PrivateAdminRoute>
+                      <AdminPage />
+                    </PrivateAdminRoute>
+                  }
+                />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
@@ -57,3 +68,10 @@ const App = () => (
 );
 
 export default App;
+
+
+///
+
+// Inside <Routes>:
+
+
