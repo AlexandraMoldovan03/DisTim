@@ -16,7 +16,7 @@ interface StampBookProps {
 }
 
 // dacă imaginile sunt în public/stamps/piata-unirii.png etc.
-const getStampImage = (totemId: string) => `/stamps/${totemId}.png`;
+const getStampImage = (totemId: string) => `/${totemId}.png`;
 
 const StampBook = ({ badges }: StampBookProps) => {
   // dacă nu ai niciun totem vizitat, nu arătăm cartea deloc

@@ -1,8 +1,6 @@
 // src/pages/TotemPage.tsx
 import { useEffect, useState } from "react";
-import { NavLink, useParams, useSearchParams } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
-
+import { NavLink, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   MapPin,
@@ -11,8 +9,6 @@ import {
   PenLine,
   Palette,
   Eye,
-  Lock,
-  Unlock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import "../leafletIconsFix";
@@ -24,7 +20,6 @@ import {
   useMap,
 } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import { saveStampToStorage, Stamp } from "@/components/StampBar";
 
 type ContentCategory = "literatura" | "poezie" | "muzica" | "arte";
 
@@ -33,7 +28,7 @@ interface TotemData {
   name: string;
   description: string | null;
   teaser_text: string | null;
-  locked_text: string | null;
+  locked_text: string | null;   // îl poți folosi în TotemBonusPage
   qr_slug: string | null;
   stamp_label: string | null;
   stamp_emoji: string | null;
@@ -81,14 +76,10 @@ function RecenterMap({ center }: { center: LatLngExpression }) {
 
 const TotemPage = () => {
   const { totemId } = useParams<{ totemId: string }>();
-  const [searchParams] = useSearchParams();
-  const { user, isAuthenticated } = useAuth0();
 
   const [totem, setTotem] = useState<TotemData | null>(null);
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unlocked, setUnlocked] = useState(false);
-  const [hasBonusUnlock, setHasBonusUnlock] = useState(false);
 
   useEffect(() => {
     if (!totemId) return;
@@ -125,26 +116,7 @@ const TotemPage = () => {
       };
       setTotem(mappedTotem);
 
-      // 2. verificăm dacă userul are bonusul deblocat în DB
-      if (user?.sub) {
-        const { data: unlocks, error: unlockError } = await supabase
-          .from("totem_unlocks")
-          .select("id")
-          .eq("auth0_sub", user.sub)
-          .eq("totem_id", totemId);
-
-        if (unlockError) {
-          console.error("Eroare la verificarea bonus unlock:", unlockError);
-        } else if (unlocks && unlocks.length > 0) {
-          setHasBonusUnlock(true);
-        } else {
-          setHasBonusUnlock(false);
-        }
-      } else {
-        setHasBonusUnlock(false);
-      }
-
-      // 3. materialele pentru acest totem
+      // 2. materialele pentru acest totem
       const { data: cData, error: cError } = await supabase
         .from("contents")
         .select("id, title, category, artist, snippet, views")
@@ -172,28 +144,10 @@ const TotemPage = () => {
 
       setItems(mappedItems);
       setLoading(false);
-
-      // 4. verificăm QR unlock (client-side, pentru locked_text + ștampilă)
-      const qrParam = searchParams.get("qr");
-      if (qrParam && qrParam === tData.qr_slug) {
-        setUnlocked(true);
-
-        // salvăm ștampila local
-        if (tData.stamp_label) {
-          const stamp: Stamp = {
-            totem_id: tData.id,
-            stamp_label: tData.stamp_label,
-            stamp_emoji: tData.stamp_emoji,
-          };
-          saveStampToStorage(stamp);
-        }
-      } else {
-        setUnlocked(false);
-      }
     };
 
     loadData();
-  }, [totemId, searchParams, user?.sub]);
+  }, [totemId]);
 
   if (loading) {
     return (
@@ -261,37 +215,6 @@ const TotemPage = () => {
                 <Eye className="w-3 h-3" />
                 {totalViews} vizualizări totale
               </span>
-
-              <span className="inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-1 border border-border/60">
-                {unlocked ? (
-                  <>
-                    <Unlock className="w-3 h-3" />
-                    <span>Conținut deblocat prin QR</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-3 h-3" />
-                    <span>Scanează codul QR din stație pentru bonus</span>
-                  </>
-                )}
-              </span>
-
-              {isAuthenticated && hasBonusUnlock && (
-                <NavLink
-                  to={`/totem/${totem.id}/bonus`}
-                  className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
-                >
-                  Vezi conținutul bonus despre monument
-                  <Unlock className="w-3 h-3" />
-                </NavLink>
-              )}
-
-              {isAuthenticated && !hasBonusUnlock && (
-                <p className="mt-1 text-[11px] text-muted-foreground text-right">
-                  După ce scanezi codul QR și marchezi că ai fost la monument,
-                  vei putea accesa conținutul bonus de aici.
-                </p>
-              )}
             </div>
           </div>
 
@@ -300,16 +223,6 @@ const TotemPage = () => {
             <p className="text-sm md:text-base text-foreground/90 mt-2">
               {totem.teaser_text}
             </p>
-          )}
-
-          {/* locked text – doar când unlocked e true */}
-          {unlocked && totem.locked_text && (
-            <div className="mt-3 rounded-xl bg-background/80 border border-border/60 p-3 text-sm text-foreground">
-              <p className="font-medium mb-1">
-                {totem.stamp_emoji || "🏅"} Poveste bonus
-              </p>
-              <p className="whitespace-pre-line">{totem.locked_text}</p>
-            </div>
           )}
         </section>
 
@@ -388,7 +301,7 @@ const TotemPage = () => {
                           Deschide materialul
                         </NavLink>
 
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                           <Eye className="w-3 h-3" />
                           {item.views} vizualizări
                         </span>

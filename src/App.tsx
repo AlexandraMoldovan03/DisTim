@@ -17,7 +17,8 @@ import VirtualPassport from "./pages/VirtualPassport";
 import QRScanner from "./pages/QRScanner";
 import ScrollToTop from "./components/ScrollToTop";
 import StampBar from "./components/StampBar";
-import AuthPage from "./pages/AuthPage";
+//import AuthPage from "./pages/AuthPage";
+
 import TotemBonusPage from "@/pages/TotemBonusPage";
 // dacă vrei și povestea AI, decomentezi astea:
 // import TimisoaraStory from "@/components/TimisoaraStory";
@@ -54,10 +55,11 @@ const App = () => (
             <Route path="/scan" element={<QRScanner />} />
 
             <Route path="/totem/:totemId" element={<TotemPage />} />
-            <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
+             <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
+            {/* <Route path="/totem/:totemId/bonus" element={<TotemBonusPage />} />
 
-            {/* callback-ul de la Auth0 */}
-            <Route path="/auth" element={<AuthPage />} />
+            callback-ul de la Auth0 */}
+           {/*} <Route path="/auth" element={<AuthPage />} />*/}
 
             {/* dacă vrei și povestea AI */}
             {/* <Route path="/story" element={<StoryRoutePage />} /> */}
