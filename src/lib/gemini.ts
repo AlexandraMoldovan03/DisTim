@@ -1,78 +1,46 @@
 // src/lib/gemini.ts
-import { GoogleGenAI } from "@google/genai";
-import { MODEL_NAME, TIMISOARA_PLACES } from "../constants";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.error("❌ VITE_GEMINI_API_KEY is not set in .env.local");
+  console.warn("⚠️ Lipsă cheia API pentru Google Gemini (VITE_GEMINI_API_KEY).");
 }
 
-const ai = new GoogleGenAI({
-  apiKey: apiKey,
-});
-
-function buildFallbackStory(places: string[]): string {
-  const list = places.join("\n• ");
-  return (
-    `Seara cobora peste Timișoara, iar pașii tăi te-au purtat printre lumini calde ` +
-    `și clădiri încărcate de istorie. De-a lungul drumului ai trecut pe la:\n\n` +
-    `• ${list}\n\n` +
-    `Chiar dacă povestea generată automat nu a fost disponibilă acum, orașul ` +
-    `continuă să-ți ofere un arc de momente, culori și emoții.\n` +
-    `Data viitoare, povestea ta va fi și mai bogată – pentru că Timișoara ` +
-    `știe întotdeauna să surprindă.`
-  );
-}
+const genAI = new GoogleGenerativeAI(apiKey);
 
 /**
- * Generează o mini poveste în funcție de locurile bifate.
+ * Generează o poveste cinematică despre Timișoara
+ * pe baza locurilor vizitate.
  */
-export async function generateTimisoaraStory(
-  places: string[]
-): Promise<string> {
-  const safePlaces =
-    Array.isArray(places) && places.length > 0
-      ? places
-      : [...TIMISOARA_PLACES];
-
-  if (!apiKey) {
-    // fără cheie → fallback local
-    return buildFallbackStory(safePlaces);
+export async function generateTimisoaraStory(visitedPlaces: string[]) {
+  if (!visitedPlaces || visitedPlaces.length === 0) {
+    return "Nu ai vizitat încă niciun loc cultural din Timișoara.";
   }
 
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+  });
+
   const prompt = `
-Scrie o mini poveste cinematografică, frumoasă și emoționantă, despre o plimbare prin Timișoara.
-Punctele vizitate sunt:
+Creează o poveste scurtă, cinematică și atmosferică despre traseul unei persoane 
+prin Timișoara, bazată pe aceste locuri vizitate:
 
-${safePlaces.map((p) => `• ${p}`).join("\n")}
+${visitedPlaces.join(", ")}
 
-Povestea trebuie să aibă:
-- 2-3 paragrafe
-- ton cald, poetic, inspirațional
-- detalii vizuale și atmosferă
-- să fie legată de locurile reale
-- să se termine cu o notă optimistă.
-
-Scrie în limba română.
-`.trim();
+Reguli:
+- ton emoțional, cinematic, aproape poetic
+- maximum 12–14 fraze
+- include detalii senzoriale (sunete, lumini, atmosferă)
+- nu transforma totul într-un eseu istoric, ci într-o experiență personală
+- scrie în limba română
+`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: prompt,
-    });
-
-    const text = response.text;
-
-    if (!text || !text.trim()) {
-      console.warn("[Gemini] Empty response, using fallback.");
-      return buildFallbackStory(safePlaces);
-    }
-
-    return text.trim();
-  } catch (err: any) {
-    console.error("[Gemini] API error, using fallback:", err?.message || err);
-    return buildFallbackStory(safePlaces);
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (err) {
+    console.error("Eroare la Gemini:", err);
+    return "A apărut o eroare la generarea poveștii.";
   }
 }

@@ -1,6 +1,6 @@
 // src/pages/TotemPage.tsx
 import { useEffect, useState } from "react";
-import { NavLink, useParams, useSearchParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   MapPin,
@@ -20,9 +20,6 @@ import {
   useMap,
 } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import { saveStampToStorage, Stamp } from "@/components/StampBar";
-import { saveUserStamp } from "@/lib/passportSupabase";
-import { useAuth } from "@/contexts/AuthContext";
 
 type ContentCategory = "literatura" | "poezie" | "muzica" | "arte";
 
@@ -31,7 +28,7 @@ interface TotemData {
   name: string;
   description: string | null;
   teaser_text: string | null;
-  locked_text: string | null; // îl poți folosi în TotemBonusPage
+  locked_text: string | null;   // îl poți folosi în TotemBonusPage
   qr_slug: string | null;
   stamp_label: string | null;
   stamp_emoji: string | null;
@@ -79,13 +76,10 @@ function RecenterMap({ center }: { center: LatLngExpression }) {
 
 const TotemPage = () => {
   const { totemId } = useParams<{ totemId: string }>();
-  const [searchParams] = useSearchParams();
-  const { user } = useAuth();
 
   const [totem, setTotem] = useState<TotemData | null>(null);
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
     if (!totemId) return;
@@ -150,38 +144,10 @@ const TotemPage = () => {
 
       setItems(mappedItems);
       setLoading(false);
-
-      // 3. verificăm QR unlock
-      const qrParam = searchParams.get("qr");
-      if (qrParam && qrParam === tData.qr_slug) {
-        setUnlocked(true);
-
-        // 3.1 salvăm ștampila local (bară vizuală)
-        if (tData.stamp_label) {
-          const stamp: Stamp = {
-            totem_id: tData.id,
-            stamp_label: tData.stamp_label,
-            stamp_emoji: tData.stamp_emoji,
-          };
-          saveStampToStorage(stamp);
-        }
-
-        // 3.2 salvăm ștampila și în Supabase pentru povestea AI
-        if (user) {
-          const rawUserId = (user as any).id || (user as any).sub;
-          if (rawUserId) {
-            try {
-              await saveUserStamp(String(rawUserId), tData.id);
-            } catch (e) {
-              console.error("Eroare la saveUserStamp în TotemPage:", e);
-            }
-          }
-        }
-      }
     };
 
     loadData();
-  }, [totemId, searchParams, user]);
+  }, [totemId]);
 
   if (loading) {
     return (
@@ -239,11 +205,6 @@ const TotemPage = () => {
                 {totem.description && (
                   <p className="text-sm text-foreground/80 mt-1">
                     {totem.description}
-                  </p>
-                )}
-                {unlocked && (
-                  <p className="mt-2 text-xs font-medium text-emerald-900 bg-emerald-100 inline-flex px-3 py-1 rounded-full">
-                    🔓 Totem deblocat prin QR
                   </p>
                 )}
               </div>
@@ -340,7 +301,7 @@ const TotemPage = () => {
                           Deschide materialul
                         </NavLink>
 
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                           <Eye className="w-3 h-3" />
                           {item.views} vizualizări
                         </span>

@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabaseClient";
 
 export type TotemId = string;
 
+
+
 /**
  * Salvează o ștampilă pentru user în tabela user_stamps.
  * Folosim upsert ca să nu genereze eroare dacă există deja.
@@ -29,11 +31,7 @@ export async function saveUserStamp(userId: string, totemId: TotemId) {
 export async function fetchVisitedPlacesForStory(
   userId: string
 ): Promise<string[]> {
-  // 👉 pentru demo-user sau id gol, nu mai batem deloc Supabase
-  if (!userId || userId === "demo-user") {
-    console.log("[Passport] demo user – nu cerem nimic din Supabase.");
-    return [];
-  }
+  if (!userId) return [];
 
   const { data, error } = await supabase
     .from("user_stamps")
@@ -50,14 +48,14 @@ export async function fetchVisitedPlacesForStory(
 
   const labels = rows
     .map((row) => {
-      const t = row.totems as any;
+      const t = row.totems;
       // în unele setup-uri relația poate veni ca array, în altele ca obiect
       if (Array.isArray(t)) {
         return t[0]?.stamp_label || row.totem_id;
       }
       return t?.stamp_label || row.totem_id;
     })
-    .filter((label) => Boolean(label)) as string[];
+    .filter((label: any) => Boolean(label)) as string[];
 
   // scoatem dublurile
   return Array.from(new Set(labels));

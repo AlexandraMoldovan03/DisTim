@@ -13,46 +13,34 @@ const ALL_PLACES_FALLBACK = [
   "Gara de Nord",
 ];
 
-// fallback local, în caz că TOTUL crapă
-function buildLocalFallback(places: string[]): string {
-  const lista = places.map((p) => `• ${p}`).join("\n");
-
-  return (
-    `Seara cobora peste Timișoara, iar pașii tăi te-au purtat printre lumini calde ` +
-    `și clădiri încărcate de istorie. De-a lungul drumului ai trecut pe la:\n\n` +
-    `${lista}\n\n` +
-    `Chiar dacă povestea generată automat nu a fost disponibilă acum, orașul continuă ` +
-    `să-ți ofere un arc de momente, culori și emoții.\n` +
-    `Data viitoare, povestea ta va fi și mai bogată – pentru că Timișoara știe întotdeauna să surprindă.`
-  );
-}
-
 export default function TimisoaraStory() {
   const { user } = useAuth();
-
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
 
   async function handleGenerate() {
     setLoading(true);
+    setError(null);
     setStory("");
     setUsedFallback(false);
 
-    // id-ul pe care îl folosim pentru Supabase (sau demo-user)
-    const rawUserId =
-      (user as any)?.id ||
-      (user as any)?.sub ||
-      "demo-user";
+    if (!user) {
+      setError(
+        "Trebuie să fii autentificat ca să îți generăm povestea personalizată."
+      );
+      setLoading(false);
+      return;
+    }
 
-    const userId = String(rawUserId);
+    const userId = user.id as string;
 
     let visitedPlaces: string[] = [];
     try {
       visitedPlaces = await fetchVisitedPlacesForStory(userId);
     } catch (e) {
-      console.error("Eroare la fetchVisitedPlacesForStory:", e);
-      visitedPlaces = [];
+      console.error(e);
     }
 
     const placesForStory =
@@ -63,35 +51,24 @@ export default function TimisoaraStory() {
     }
 
     try {
-      // 1) încercăm să luăm povestea de la Gemini
-      const textFromApi = await generateTimisoaraStory(placesForStory);
-
-      // 2) dacă API-ul a întors ceva gol, folosim fallback local
-      const finalText =
-        textFromApi && textFromApi.trim().length > 0
-          ? textFromApi
-          : buildLocalFallback(placesForStory);
-
-      setStory(finalText);
+      const text = await generateTimisoaraStory(placesForStory);
+      setStory(text);
     } catch (err) {
-      // 3) dacă TOTUȘI explodează ceva, NU mai arătăm mesaj roșu,
-      // ci direct poveste fallback locală
-      console.error(
-        "[TimisoaraStory] Eroare la generateTimisoaraStory, folosim fallback local:",
-        err
+      console.error(err);
+      setError(
+        "A apărut o eroare când am încercat să generăm povestea. Încearcă din nou mai târziu."
       );
-      setStory(buildLocalFallback(placesForStory));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-3">
+    <div className="w-full max-w-2xl mx-auto">
+      <h2 className="text-xl font-semibold mb-2">
         Povestea ta prin Timișoara
       </h2>
-      <p className="text-sm text-slate-300 mb-4">
+      <p className="text-sm text-slate-400 mb-4">
         Gemini construiește o poveste scurtă, cinematică, bazată pe locurile
         pe care le-ai descoperit prin totem-urile DisTim.
       </p>
@@ -99,14 +76,22 @@ export default function TimisoaraStory() {
       <button
         onClick={handleGenerate}
         disabled={loading}
-        className="rounded-full bg-cyan-500 px-6 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition"
+        className="rounded-full bg-cyan-500 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition"
       >
         {loading ? "Generăm povestea..." : "Generează povestea mea"}
       </button>
 
-      {usedFallback && (
+      {usedFallback && !error && (
         <p className="mt-3 text-xs text-amber-300/80">
-          Folosim locuri implicite pentru că nu ai scanat încă totem-uri.
+          Nu am găsit încă totem-uri marcate ca vizitate pentru contul tău, așa
+          că am folosit toate punctele DisTim ca inspirație. Pe măsură ce scanezi
+          QR-uri și deblochezi ștampile, povestea va deveni tot mai personală. ✨
+        </p>
+      )}
+
+      {error && (
+        <p className="mt-4 text-sm text-red-400">
+          {error}
         </p>
       )}
 

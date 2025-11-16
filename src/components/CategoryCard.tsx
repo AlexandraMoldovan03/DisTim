@@ -9,7 +9,8 @@ interface CategoryCardProps {
   isLoading?: boolean; // 👈 nou, optional
 }
 
-const CategoryCard = ({ id, name, icon, count, colorClass, isLoading }: CategoryCardProps) => {
+
+const CategoryCard = ({ id, name, icon, count, colorClass }: CategoryCardProps) => {
   return (
     <NavLink
       to={`/category/${id}`}
@@ -22,18 +23,12 @@ const CategoryCard = ({ id, name, icon, count, colorClass, isLoading }: Category
         group
       `}
     >
-      <span
-        className="text-6xl transition-transform duration-300 group-hover:scale-110"
-        role="img"
-        aria-label={name}
-      >
+      <span className="text-6xl transition-transform duration-300 group-hover:scale-110" role="img" aria-label={name}>
         {icon}
       </span>
-      <h3 className="text-lg font-bold text-center text-foreground">
-        {name}
-      </h3>
+      <h3 className="text-lg font-bold text-center text-foreground">{name}</h3>
       <span className="absolute top-4 right-4 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium">
-        {isLoading ? "…" : count}
+        {count}
       </span>
     </NavLink>
   );
